@@ -351,21 +351,10 @@
   .code-table tr:hover td { background: var(--bg-secondary); }
 
   @media (max-width: 680px) {
-    .layout { display: flex; flex-direction: column; }
-    .sidebar {
-      position: static;
-      height: auto;
-      border-right: none;
-      border-bottom: 1px solid var(--gray-border);
-      max-height: 200px;
-      overflow-y: scroll;
-      -webkit-overflow-scrolling: touch;
-    }
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--gray-border); max-height: 180px; overflow-y: auto; }
     .main { padding: 20px 16px; max-width: 100%; }
     .topbar h1 { display: none; }
-    .timer-hint { display: none; }
-    .nav-arrows { flex-wrap: wrap; gap: 8px; }
-    .nav-center { width: 100%; order: -1; text-align: center; }
   }
 </style>
 </head>
@@ -378,8 +367,8 @@
     <h1>Guión de Defensa</h1>
   </div>
   <div class="topbar-right">
-    <button id="reset-btn" onclick="resetTimer()" title="Reiniciar">↺</button>
-    <div class="timer-wrap" onclick="toggleTimer()" ontouchend="event.preventDefault();toggleTimer();" title="Clic para iniciar / pausar">
+    <span id="reset-btn" onclick="resetTimer()" title="Reiniciar">↺</span>
+    <div class="timer-wrap" onclick="toggleTimer()" title="Clic para iniciar / pausar">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#888">
         <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
       </svg>
@@ -765,7 +754,7 @@
       </div>
       <div class="qa-item">
         <div class="qa-question">¿Vuestra arquitectura es MVC?</div>
-        <div class="qa-answer">Guarda similitudes con MVC — podríamos equiparar Prisma al Model, React a la View y las API Routes al Controller — pero al estar el frontend y el backend desacoplados se describe mejor como arquitectura de 3 capas Cliente-Servidor. En MVC clásico el controlador devuelve la vista directamente desde el servidor; en nuestro caso React vive en el navegador y se comunica con las API Routes mediante fetch, son dos mundos separados.</div>
+        <div class="qa-answer">Se parece a MVC — podríamos equiparar Prisma al Model, React a la View y las API Routes al Controller — pero no es MVC puro. En MVC clásico (como Laravel o Django) el controlador devuelve y controla la vista: recibe la petición, consulta el modelo y le dice al servidor que renderice el HTML. En nuestro caso las API Routes solo devuelven JSON, nunca una vista. Es React quien decide de forma independiente cómo renderizar esos datos en el navegador. El controlador no tiene ningún control sobre la vista, por eso se describe mejor como arquitectura de 3 capas.</div>
       </div>
       <div class="qa-item">
         <div class="qa-question">¿Por qué una sola página muestra todos los vehículos con datos distintos?</div>
@@ -883,29 +872,13 @@ function goTo(n) {
   document.getElementById('next-btn').disabled = current === total - 1;
   document.getElementById('slide-counter').textContent = (current + 1) + ' / ' + total;
   document.getElementById('pbar').style.width = ((current + 1) / total * 100) + '%';
-  try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { window.scrollTo(0, 0); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
 });
-
-// Swipe para iOS
-let touchStartX = 0;
-let touchStartY = 0;
-document.addEventListener('touchstart', e => {
-  touchStartX = e.changedTouches[0].clientX;
-  touchStartY = e.changedTouches[0].clientY;
-}, { passive: true });
-document.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-    if (dx < 0) goTo(current + 1);
-    else goTo(current - 1);
-  }
-}, { passive: true });
 
 function toggleTimer() {
   running = !running;
